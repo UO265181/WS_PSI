@@ -67,6 +67,9 @@ function update_devices() {
                 ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'Damgard-Jurik OPE' + '\', \'' + 'OPE' +'\')">Damgard-Jurik - OPE</button>' +
                 ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'Paillier PSI-CA OPE' + '\', \'' + 'PSI-CA' +'\')">Cardinality - Paillier</button>' +
                 ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'Damgard-Jurik PSI-CA OPE' + '\', \'' + 'PSI-CA' +'\')">Cardinality - Damgard-Jurik</button>' +
+                ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'SWOOSH_FLINT' + '\', \'' + 'SWOOSH' +'\')">Swoosh Flint</button>' +
+                ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'SWOOSH_NTT' + '\', \'' + 'SWOOSH' +'\')">Swoosh NTT</button>' +
+                ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'SWOOSH_RUST' + '\', \'' + 'SWOOSH' +'\')">Swoosh RUST</button>' +
                 ' <button class="btn waves-effect waves-light" onclick="test(\'' + key + '\')">Launch test</button>'
                 );
             });
@@ -152,7 +155,10 @@ function test(device) {
 function mykeys() {
     $.get('/api/mykeys', function(data){
         const message = "Claves públicas: " + "\nPaillier\nn: " + data.pubkeyN + "\ng: " + data.pubkeyG
-            + "\nDamgard-Jurik\nn: " + data.pubkeyNDJ + "\ns: " + data.pubkeySDJ + "\nm: " + data.pubkeyMDJ;
+            + "\nDamgard-Jurik\nn: " + data.pubkeyNDJ + "\ns: " + data.pubkeySDJ + "\nm: " + data.pubkeyMDJ
+            + "\nSwoosh Flint\nPublic Key (hash): " + data.pubkeySWOOSH_FLINT
+            + "\nSwoosh NTT\nPublic Key (hash): " + data.pubkeySWOOSH_NTT
+            + "\nSwoosh RUST\nPublic Key (hash): " + data.pubkeySWOOSH_RUST; 
         window.open().document.write('<pre>' + message + '</pre>');
     });
 }
@@ -171,7 +177,7 @@ function results() {
     });
 }
 
-function genkeys(scheme, bitlength) {
+function genkeys(scheme, bitlength=null) {
     $.post(`/api/genkeys?scheme=${scheme}&bit_length=${bitlength}`, function(data){
         const message = data.status;
         M.toast({html: message});

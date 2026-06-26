@@ -4,9 +4,11 @@ import time
 from Crypto.handlers.CAOPEHandler import CAOPEHandler
 from Crypto.handlers.DomainPSIHandler import DomainPSIHandler
 from Crypto.handlers.OPEHandler import OPEHandler
+from Crypto.handlers.SwooshHandler import SwooshHandler
 from Crypto.helpers.BFVHelper import BFVHelper
 from Crypto.helpers.CryptoImplementation import CryptoImplementation
 from Crypto.helpers.DamgardJurikHandler import DamgardJurikHelper
+from Crypto.helpers.swoosh.SwooshHelper import SwooshHelper
 from Crypto.helpers.PaillierHandler import PaillierHelper
 from Logs import Logs
 from Logs.Logs import ThreadData
@@ -27,23 +29,31 @@ class JSONHandler:
             CryptoImplementation("DamgardJurik", "Damgard-Jurik", "DamgardJurik OPE",
                                  "Damgard-Jurik_OPE", "Damgard-Jurik OPE", "DamgardJurik PSI-CA OPE",
                                  "Damgard-Jurik PSI-CA OPE"): DamgardJurikHelper(),
-            CryptoImplementation("BFV", "BFV_OPE", "BFV OPE"): BFVHelper()
+            CryptoImplementation("BFV", "BFV_OPE", "BFV OPE"): BFVHelper(),
+            CryptoImplementation("SWOOSH", "SWOOSH_NTT", "SWOOSH NTT"): SwooshHelper("NTT"),
+            CryptoImplementation("SWOOSH", "SWOOSH_FLINT", "SWOOSH FLINT"): SwooshHelper("FLINT"),
+            CryptoImplementation("SWOOSH", "SWOOSH_RUST", "SWOOSH RUST"): SwooshHelper("RUST")
         }
         self.OPEHandler = OPEHandler(id, my_data, domain, devices, results)
         self.CAOPEHandler = CAOPEHandler(id, my_data, domain, devices, results)
         self.domainPSIHandler = DomainPSIHandler(id, my_data, domain, devices, results)
+        self.swooshHandler = SwooshHandler(id, my_data, domain, devices, results)
         self.id = id
         self.devices = devices
         self.executor = PriorityExecutor(max_workers=10)
         self.new_peer = new_peer_function
 
     def test_launcher(self, device):
-        cs_handlers = self.CSHandlers.values()
+        crypto_flint = CryptoImplementation.from_string("SWOOSH_FLINT")
+        crypto_ntt = CryptoImplementation.from_string("SWOOSH_NTT")
+        crypto_rust = CryptoImplementation.from_string("SWOOSH_RUST")
+        flint = self.CSHandlers.get(crypto_flint)
+        ntt = self.CSHandlers.get(crypto_ntt)
+        rust = self.CSHandlers.get(crypto_rust)
         for _ in range(TEST_ROUNDS):
-            for cs in cs_handlers:
-                self.executor.submit(0, self.domainPSIHandler.intersection_first_step, device, cs)
-                self.executor.submit(0, self.OPEHandler.intersection_first_step, device, cs)
-                self.executor.submit(0, self.CAOPEHandler.intersection_first_step, device, cs)
+            self.executor.submit(0, self.swooshHandler.intersection_first_step, device, flint)
+            self.executor.submit(0, self.swooshHandler.intersection_first_step, device, ntt)
+            self.executor.submit(0, self.swooshHandler.intersection_first_step, device, rust)
 
     def genkeys(self, cs, bit_length=None, domain=None):
         start_time = time.time()
@@ -71,6 +81,9 @@ class JSONHandler:
             elif type == "PSI-Domain":
                 for _ in range(int(rounds)):
                     self.executor.submit(0, self.domainPSIHandler.intersection_first_step, device, cs)
+            elif type == "SWOOSH":
+                for _ in range(int(rounds)):
+                    self.executor.submit(0, self.swooshHandler.intersection_first_step, device, cs)
             else:
                 return "Invalid type: " + type if cs.imp_name != "BFV" else "BFV does not support PSI-CA... yet"
             return ("Intersection with " + device + " - " + scheme + " - " + type + " - Rounds: " + str(rounds) +
@@ -100,6 +113,9 @@ class JSONHandler:
             elif "OPE" in message['implementation']:
                 self.executor.submit(1, self.OPEHandler.intersection_second_step, message['peer'], cs,
                                      message['data'], message['pubkey'])
+            elif "SWOOSH" in message['implementation']:
+                self.executor.submit(1, self.swooshHandler.intersection_second_step, message['peer'], cs,
+                                     message['data'], message['pubkey'])
             else:
                 self.executor.submit(1, self.domainPSIHandler.intersection_second_step, message['peer'], cs,
                                      message['data'], message['pubkey'])
@@ -115,6 +131,9 @@ class JSONHandler:
                                      message['data'])
             elif "OPE" in message['implementation']:
                 self.executor.submit(2, self.OPEHandler.intersection_final_step, message['peer'], cs,
+                                     message['data'])
+            elif "SWOOSH" in message['implementation']:
+                self.executor.submit(2, self.swooshHandler.intersection_final_step, message['peer'], cs,
                                      message['data'])
             else:
                 self.executor.submit(2, self.domainPSIHandler.intersection_final_step, message['peer'], cs,

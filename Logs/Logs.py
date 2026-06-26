@@ -173,9 +173,14 @@ def stop_logging_ram_usage(thread_data):
     result = sum(thread_data.ram_usage) / len(thread_data.ram_usage)
     thread_data.avg_ram_usage = round(result, 2)
     thread_data.peak_ram_usage = round(max(thread_data.ram_usage), 2)
-    result = sum(thread_data.instance_ram_usage) / len(thread_data.instance_ram_usage)
-    thread_data.avg_instance_ram_usage = round(result, 2)
-    thread_data.peak_instance_ram_usage = round(max(thread_data.instance_ram_usage), 2)
+    # If para evitar dividir por cero si no se ha conseguido medir correctamente instance_ram_usage
+    if thread_data.instance_ram_usage: 
+        result = sum(thread_data.instance_ram_usage) / len(thread_data.instance_ram_usage)
+        thread_data.avg_instance_ram_usage = round(result, 2)
+        thread_data.peak_instance_ram_usage = round(max(thread_data.instance_ram_usage), 2)
+    else:
+        thread_data.avg_instance_ram_usage = 0
+        thread_data.peak_instance_ram_usage = 0
     return
 
 

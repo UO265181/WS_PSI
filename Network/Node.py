@@ -196,9 +196,10 @@ class Node:
         self.context.term()
         Node.__instance = None
 
-    def genkeys(self, scheme, bit_length):
-        if bit_length < 16:
-            return "Minimum bit length is 16"
+    def genkeys(self, scheme, bit_length=None):
+        if bit_length is not None:
+            if bit_length < 16:
+                return "Minimum bit length is 16"
         if scheme == "Paillier":
             self.executor.submit(1, self.json_handler.genkeys, "Paillier", bit_length)
             return "Generating Paillier keys... Bit length: " + str(bit_length)
@@ -208,6 +209,15 @@ class Node:
         elif scheme == "BFV":
             self.executor.submit(1, self.json_handler.genkeys, "BFV", bit_length)
             return "Generating BFV keys... Bit length is ignored"
+        elif scheme == "SWOOSH_FLINT":
+            self.executor.submit(1, self.json_handler.genkeys, "SWOOSH_FLINT", bit_length)
+            return "Generating Swoosh Flint keys... Bit length is ignored"
+        elif scheme == "SWOOSH_NTT":
+            self.executor.submit(1, self.json_handler.genkeys, "SWOOSH_NTT", bit_length)
+            return "Generating Swoosh NTT keys... Bit length is ignored"
+        elif scheme == "SWOOSH_RUST":
+            self.executor.submit(1, self.json_handler.genkeys, "SWOOSH_RUST", bit_length)
+            return "Generating Swoosh RUST keys... Bit length is ignored"
         return "Invalid scheme"
 
     def new_peer(self, peer, last_seen):
@@ -225,7 +235,9 @@ class Node:
         sockets = []
         # Iterar sobre todas las direcciones IP posibles en la subred
         for i in range(1, 256):
-            ip = f"192.168.1.{i}"
+            # Busca en la subred de la propia IP
+            red = self.id.rsplit(".", 1)[0]
+            ip = f"{red}.{i}"
             if ip not in self.devices and ip != self.id:
                 # Crear un nuevo socket y tratar de conectar
                 dealer_socket = self.context.socket(zmq.DEALER)

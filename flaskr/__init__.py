@@ -11,6 +11,14 @@ from Network.collections.DbConstants import DEFL_PORT, print_banner
 from Network.collections.networking import is_valid_ipv4, is_valid_ipv6
 from Crypto.helpers.CryptoImplementation import CryptoImplementation
 
+# Para evitar desbordes de pila al usar BackendRust
+import threading
+try:
+    threading.stack_size(64 * 1024 * 1024)
+    print("Python thread stack size set to 64 MiB")
+except (ValueError, RuntimeError) as e:
+    print(f"Could not set Python thread stack size: {e}")
+
 
 def node_wrapper(func):
     @functools.wraps(func)
@@ -107,7 +115,13 @@ def create_app(test_config=None):
                          'pubkeySDJ': str(node.json_handler.
                                           CSHandlers[CryptoImplementation.from_string("DamgardJurik")].public_key.s),
                          'pubkeyMDJ': str(node.json_handler.
-                                          CSHandlers[CryptoImplementation.from_string("DamgardJurik")].public_key.m)}))
+                                          CSHandlers[CryptoImplementation.from_string("DamgardJurik")].public_key.m),
+                         'pubkeySWOOSH_FLINT': str(node.json_handler.
+                                          CSHandlers[CryptoImplementation.from_string("SWOOSH_FLINT")].public_key_for_ui()),
+                         'pubkeySWOOSH_NTT': str(node.json_handler.
+                                          CSHandlers[CryptoImplementation.from_string("SWOOSH_NTT")].public_key_for_ui()),
+                         'pubkeySWOOSH_RUST': str(node.json_handler.
+                                          CSHandlers[CryptoImplementation.from_string("SWOOSH_RUST")].public_key_for_ui())}))
 
     @app.route('/api/intersection', methods=['POST'])
     @node_wrapper
@@ -145,6 +159,8 @@ def create_app(test_config=None):
         bit_length = request.args.get('bit_length')
         if scheme is None:
             return jsonify({'status': 'Invalid parameters'})
+        if scheme.startswith("SWOOSH"):
+                return jsonify({'status': node.genkeys(scheme, None)})
         if not bit_length.isdigit():
             return jsonify({'status': 'Invalid bit length'})
         return jsonify({'status': node.genkeys(scheme, int(bit_length))})
