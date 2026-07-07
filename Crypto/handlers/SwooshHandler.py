@@ -70,21 +70,19 @@ class SwooshHandler(IntersectionHandler):
     def intersection_final_step(self, device, cs, peer_pubkey):
         """
         Paso final del protocolo.
-        Si la shared key no ha sido derivada todavía,
-        la calcula a partir de la clave pública recibida y registra el
+        Calcula la shared key a partir de la clave pública recibida y registra el
         resultado final del intercambio.
         """
+
+        if hasattr(cs.backend, "set_role"):
+            cs.backend.set_role(self._resolve_rust_role(device))
+
+        peer_key_bytes = cs.reconstruct_public_key(peer_pubkey)
+        shared_key_bytes = cs.compute_shared_key(peer_key_bytes)
+        shared_key = cs.serialize_result(shared_key_bytes)
+
         key_label = f"{self.id}-{device} {cs.imp_name} SharedKey"
-
-        if key_label not in self.results:
-            if hasattr(cs.backend, "set_role"):
-                cs.backend.set_role(self._resolve_rust_role(device))
-
-            peer_key_bytes = cs.reconstruct_public_key(peer_pubkey)
-            shared_key_bytes = cs.compute_shared_key(peer_key_bytes)
-            shared_key = cs.serialize_result(shared_key_bytes)
-
-            self.results[key_label] = shared_key
+        self.results[key_label] = shared_key
 
         Logs.log_result(
             "NIKE_SWOOSH_" + cs.imp_name,

@@ -8,6 +8,7 @@ from Crypto.helpers.CSHelper import CSHelper
 from .params import SwooshParameters
 from .SwooshBackendFlint import BackendFlint
 from .SwooshBackendNTTBasic import BackendNTTBasic
+from .SwooshBackendNTTBasic2 import BackendNTTBasic2
 from .SwooshBackendRust import BackendRust
 
 
@@ -44,6 +45,9 @@ class SwooshHelper(CSHelper):
         elif backend == "NTT":
             self.backend = BackendNTTBasic(self.params)
             self.imp_name = "SWOOSH_NTT"
+        elif backend == "NTT2":
+            self.backend = BackendNTTBasic2(self.params)
+            self.imp_name = "SWOOSH_NTT2"
         elif backend == "RUST":
             self.backend = BackendRust(self.params)
             self.imp_name = "SWOOSH_RUST"
@@ -135,8 +139,8 @@ class SwooshHelper(CSHelper):
 
     def generate_keys(
         self,
-        _bit_length: Optional[int] = None,  # ignorado, se mantiene por compatibilidad
-        _domain: Optional[str] = None       # ignorado, se mantiene por compatibilidad
+        bit_length: Optional[int] = None,  # ignorado, se mantiene por compatibilidad
+        domain: Optional[str] = None       # ignorado, se mantiene por compatibilidad
     ) -> Tuple[bytes, bytes]:
         """
         Genera el par de claves del nodo y devuelve sus serializaciones.

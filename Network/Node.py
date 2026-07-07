@@ -215,6 +215,9 @@ class Node:
         elif scheme == "SWOOSH_NTT":
             self.executor.submit(1, self.json_handler.genkeys, "SWOOSH_NTT", bit_length)
             return "Generating Swoosh NTT keys... Bit length is ignored"
+        elif scheme == "SWOOSH_NTT2":
+            self.executor.submit(1, self.json_handler.genkeys, "SWOOSH_NTT2", bit_length)
+            return "Generating Swoosh NTT2 keys... Bit length is ignored"
         elif scheme == "SWOOSH_RUST":
             self.executor.submit(1, self.json_handler.genkeys, "SWOOSH_RUST", bit_length)
             return "Generating Swoosh RUST keys... Bit length is ignored"

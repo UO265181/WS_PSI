@@ -69,6 +69,7 @@ function update_devices() {
                 ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'Damgard-Jurik PSI-CA OPE' + '\', \'' + 'PSI-CA' +'\')">Cardinality - Damgard-Jurik</button>' +
                 ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'SWOOSH_FLINT' + '\', \'' + 'SWOOSH' +'\')">Swoosh Flint</button>' +
                 ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'SWOOSH_NTT' + '\', \'' + 'SWOOSH' +'\')">Swoosh NTT</button>' +
+                ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'SWOOSH_NTT2' + '\', \'' + 'SWOOSH' +'\')">Swoosh NTT2</button>' +
                 ' <button class="btn waves-effect waves-light" onclick="FindIntersection(\'' + key + '\', \'' + 'SWOOSH_RUST' + '\', \'' + 'SWOOSH' +'\')">Swoosh RUST</button>' +
                 ' <button class="btn waves-effect waves-light" onclick="test(\'' + key + '\')">Launch test</button>'
                 );
@@ -158,6 +159,7 @@ function mykeys() {
             + "\nDamgard-Jurik\nn: " + data.pubkeyNDJ + "\ns: " + data.pubkeySDJ + "\nm: " + data.pubkeyMDJ
             + "\nSwoosh Flint\nPublic Key (hash): " + data.pubkeySWOOSH_FLINT
             + "\nSwoosh NTT\nPublic Key (hash): " + data.pubkeySWOOSH_NTT
+            + "\nSwoosh NTT2\nPublic Key (hash): " + data.pubkeySWOOSH_NTT2
             + "\nSwoosh RUST\nPublic Key (hash): " + data.pubkeySWOOSH_RUST; 
         window.open().document.write('<pre>' + message + '</pre>');
     });

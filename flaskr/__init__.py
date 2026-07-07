@@ -120,6 +120,8 @@ def create_app(test_config=None):
                                           CSHandlers[CryptoImplementation.from_string("SWOOSH_FLINT")].public_key_for_ui()),
                          'pubkeySWOOSH_NTT': str(node.json_handler.
                                           CSHandlers[CryptoImplementation.from_string("SWOOSH_NTT")].public_key_for_ui()),
+                         'pubkeySWOOSH_NTT2': str(node.json_handler.
+                                          CSHandlers[CryptoImplementation.from_string("SWOOSH_NTT2")].public_key_for_ui()),
                          'pubkeySWOOSH_RUST': str(node.json_handler.
                                           CSHandlers[CryptoImplementation.from_string("SWOOSH_RUST")].public_key_for_ui())}))
 

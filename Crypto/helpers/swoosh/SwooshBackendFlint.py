@@ -408,16 +408,16 @@ class BackendFlint(SwooshBackend):
         respecto a los umbrales q/4 y 3q/4.
         """
         coeffs = list(kv_poly.coeffs())
-        if len(coeffs) < self.p.d:
-            coeffs += [0] * (self.p.d - len(coeffs))
+        if len(coeffs) < self.d:
+            coeffs += [0] * (self.d - len(coeffs))
 
-        q = int(self.p.q)
-        out = bytearray(self.p.d // 8)
+        q = int(self.q)
+        out = bytearray(self.d // 8)
 
         q4 = q // 4
         tq4 = (3 * q) // 4
 
-        for i in range(self.p.d // 8):
+        for i in range(self.d // 8):
             acc = 0
             for j in range(8):
                 c = int(coeffs[8 * i + j]) % q

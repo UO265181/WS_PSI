@@ -31,6 +31,7 @@ class JSONHandler:
                                  "Damgard-Jurik PSI-CA OPE"): DamgardJurikHelper(),
             CryptoImplementation("BFV", "BFV_OPE", "BFV OPE"): BFVHelper(),
             CryptoImplementation("SWOOSH", "SWOOSH_NTT", "SWOOSH NTT"): SwooshHelper("NTT"),
+            CryptoImplementation("SWOOSH", "SWOOSH_NTT2", "SWOOSH NTT2"): SwooshHelper("NTT2"),
             CryptoImplementation("SWOOSH", "SWOOSH_FLINT", "SWOOSH FLINT"): SwooshHelper("FLINT"),
             CryptoImplementation("SWOOSH", "SWOOSH_RUST", "SWOOSH RUST"): SwooshHelper("RUST")
         }
@@ -46,13 +47,16 @@ class JSONHandler:
     def test_launcher(self, device):
         crypto_flint = CryptoImplementation.from_string("SWOOSH_FLINT")
         crypto_ntt = CryptoImplementation.from_string("SWOOSH_NTT")
+        crypto_ntt2 = CryptoImplementation.from_string("SWOOSH_NTT2")
         crypto_rust = CryptoImplementation.from_string("SWOOSH_RUST")
         flint = self.CSHandlers.get(crypto_flint)
         ntt = self.CSHandlers.get(crypto_ntt)
+        ntt2 = self.CSHandlers.get(crypto_ntt2)
         rust = self.CSHandlers.get(crypto_rust)
         for _ in range(TEST_ROUNDS):
             self.executor.submit(0, self.swooshHandler.intersection_first_step, device, flint)
             self.executor.submit(0, self.swooshHandler.intersection_first_step, device, ntt)
+            self.executor.submit(0, self.swooshHandler.intersection_first_step, device, ntt2)
             self.executor.submit(0, self.swooshHandler.intersection_first_step, device, rust)
 
     def genkeys(self, cs, bit_length=None, domain=None):
