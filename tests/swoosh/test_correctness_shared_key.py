@@ -20,7 +20,7 @@ class TestCorrectnessSharedKeyPython(unittest.TestCase):
     """
 
     ITERATIONS = 1000
-    BASE_BACKENDS = ["NTT"]
+    BASE_BACKENDS = ["NTT2"]
     N = 32
 
     @classmethod
