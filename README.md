@@ -15,7 +15,8 @@ En este trabajo se ha incorporado SWOOSH como un esquema de intercambio de clave
 La instalación se ha probado principalmente en Ubuntu. Las versiones utilizadas durante el desarrollo fueron:
 
 - Python 3.12.3
-- Rust / rustup 1.29.0
+- rustc 1.96.0
+- rustup 1.29.0
 - Docker 29.4.3
 
 ## Instalación del framework
