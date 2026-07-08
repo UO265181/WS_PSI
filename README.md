@@ -1,83 +1,205 @@
-# PSI Suite - Python Web Service
-Servicio web de Flask que levanata un nodo y expone una API REST y una interfaz gráfica con el objetivo de probar diferentes criptosistemas y protocolos para calcular PSI (Private Set Intersection) o conjuntos de intersecciones privados.
+# WS_PSI - Integración de SWOOSH
+
+Este repositorio contiene la integración del protocolo **SWOOSH** dentro del framework **WS_PSI**.  
+WS_PSI es un servicio web basado en Flask que permite levantar nodos, exponer una API REST y utilizar una interfaz gráfica para probar protocolos criptográficos en un entorno distribuido.
+
+En este trabajo se ha incorporado SWOOSH como un esquema de intercambio de claves no interactivo resistente frente a amenazas cuánticas. La integración incluye distintos backends de ejecución:
+
+- `BackendFlint`: implementación Python apoyada en `python-flint`.
+- `BackendNTTBasic`: implementación experimental basada en NTT/FTT.
+- `BackendNTTBasic2`: versión optimizada de `BackendNTTBasic`.
+- `BackendRust`: integración nativa mediante Rust y FFI, basada en `pswoosh`.
 
 ## Requisitos
-* **Python 3.11**
-* git
-* pip
 
-El sistema ha demostrado funcionar en sistemas ARM y x86. Se ha probado su funcionamiento en Windows y en macOS.
+La instalación se ha probado principalmente en Ubuntu. Las versiones utilizadas durante el desarrollo fueron:
 
-## Arrancar el servicio web
+- Python 3.12.3
+- Rust / rustup 1.29.0
+- Docker 29.4.3
 
-Para arrancar el servicio se pueden seguir estos pasos:
+## Instalación del framework
 
-1. Clonar el repositorio: `git clone https://github.com/4rius/WS_PSI.git`. También se puede clonar utilizando el soporte gráfico de GitHub Desktop.
-2. Navegar a la carpeta del proyecto: `cd WS_PSI`.
-3. Instalar las dependencias, por conveniencia se puede utilizar un entorno virtual de Python:
-    1. Crear un entorno virtual: `python -m venv WS-PSI-ENV` en Windows o `python3 -m venv WS-PSI-ENV` en Linux. En sistemas UNIX se recomienda comprobar que `python3` es una versión 3.11, esto se puede hacer con `python3 --version`. Si no fuera así, se puede instalar y evitar actualizar variables haciendo `python3.11 -m venv WS-PSI-ENV`.
-    2. Activar el entorno virtual: `source WS-PSI-ENV/bin/activate` en Linux o `WS-PSI-ENV\Scripts\activate` en Windows.
-    3. Instalar las dependencias: `pip install -r requirements.txt`. Y las dependencias para BFV `py-fhe`: `cd Crypto/py-fhe && pip install .` \
-Por conveniencia, existe un archivo `setup.sh` que realiza todos estos pasos (para macOS y Linux). Para ejecutarlo, se debe dar permisos de ejecución: `chmod +x setup.sh` y ejecutarlo: `./setup.sh`. Esto solo funciona con Python 3.11
-4. Si no estamos en el entorno virtual (al terminar el script), se debe activar: `source WS-PSI-ENV/bin/activate` en Linux o `WS-PSI-ENV\Scripts\activate` en Windows. Donde `WS-PSI-ENV` es el nombre del entorno virtual.
-5. Arrancar el servidor:
-   1. Usando el servidor de desarrollo por defecto de Flask: `flask --app flaskr:create_app run`.\
-![flaskdefault.png](docs/flaskdefault.png)
-   2. Usando un servidor `waitress` (recomendado): `waitress-serve --host 127.0.0.1 --port 8080 --call flaskr:create_app`
-      1. Para instalar `waitress`, se puede hacer con el comando: `pip install waitress`.\
-![waitressdefault.png](docs/waitressdefault.png) \
-Se recomienda usar `waitress` para evaluar las implementaciones, ya que es más rápido y seguro que el servidor de desarrollo de Flask. Simula mejor lo que sería el rendimiento del sistema en producción.
+### 1. Clonar el repositorio principal
 
-**Servidor por defecto**\
-La API REST quedará expuesta en la dirección `http://127.0.0.1:5000/api` y la interfaz gráfica en `http://127.0.0.1:5000/`. \
-Se puede modificar el puerto y la dirección de la API en el arranque del servidor. Ejemplo: `flask --app flaskr:create_app run --port=8000`. La dirección cambiaría con `--host=OTRA_DIRECCION` aunque puede que no se pueda asignar.\
-**Servidor `waitress`**\
-La API REST quedará expuesta en la dirección `http://127.0.0.1:8080/api` y la interfaz gráfica en `http://127.0.0.1:8080/`. \
-Se puede modificar el puerto y la dirección de la API en el arranque del servidor. Ejemplo: `waitress-serve --host 127.0.0.1 --port 8000 --call flaskr:create_app`\
+```bash
+git clone https://github.com/UO265181/WS_PSI.git
+cd WS_PSI
+```
 
-El nodo por defecto empezará a escuchar en el puerto 5001, pero se puede cambiar mediante la API. Siempre correrá en la IP local para que otros usuarios de la red local puedan conectarse a él. Este comportamiento es *modificable* por si se quisiera exponer a internet, pero **no está parametrizado**.
+### 2. Crear y activar el entorno virtual
 
-## Autenticación mediante archivo de credenciales
+```bash
+python3 -m venv WS-PSI-ENV
+source WS-PSI-ENV/bin/activate
+```
 
-Para poder mandar registros a la Realtime Database es necesario un archivo de credenciales.\
-Para obtenerlo, se debe seguir los siguientes pasos:
-1. Acceder a la consola de Firebase: [Firebase Console](https://console.firebase.google.com/).
-2. Crear un nuevo proyecto o seleccionar uno existente.
-3. Ir a la sección de configuración del proyecto.
-4. Descargar el archivo de credenciales en formato JSON desde la sección de *Cuentas de servicio*.\
-![serviceaccFB.png](docs/serviceaccFB.png)\
-5. Guardar el archivo en la carpeta raíz con el nombre `firebase-credentials.json`. *Este archivo proporciona acceso de administrador al proyecto.* **No se debe subir a ningún repositorio público**. Se debe añadir al `.gitignore` para evitar subirlo por error. \
-![authlocation.png](docs/authlocation.png)
-6. Actualizar el valor del parámetro `FB_URL` en el archivo `Network/collections/DbConstants.py` con la URL de la Realtime Database.\
-![FB_URL.png](docs/FB_URL.png)
-7. Volver a arrancar el servidor. En vez de indicar que no se ha encontrado el archivo de credenciales, se mostrará un mensaje de que se ha conectado a la base de datos correctamente y se enviará el primer log con la configuración del dispositivo.\
-![authFB.png](docs/authFB.png)
-8. Si la Realtime Database está configurada correctamente, se enviarán registros sin problema. Solo es necesario activarla para que funcione.
+### 3. Instalar dependencias Python
 
-## API REST
+```bash
+pip install -r requirements.txt
+```
 
-Se incluye en este repositorio una colección de Postman con las peticiones a la API REST.\
-Para importarla, se debe seguir los siguientes pasos:
-1. Descargar el archivo `PSI Suite.postman_collection.json` desde la carpeta `docs`.
-2. Abrir Postman.
-3. Ir a la sección de colecciones.
-4. Importar la colección descargada.
-5. Seleccionar el archivo descargado.
-6. La colección se importará correctamente.\
-![PostmanAPI.png](docs/PostmanAPI.png)
+### 4. Instalar el módulo local `py-fhe`
 
-En el apartado de `Variables` se pueden modificar las variables de entorno para que se ajusten a la configuración del servidor. Por defecto traen la URL y el puerto del servidor de desarrollo de Flask, así como un dispositivo para probar las peticiones. \
-Cada petición tiene una descripción detallada de lo que hace y qué espera recibir para funcionar correctamente. \
-![PostmanDocs.png](docs/PostmanDocs.png)
+```bash
+cd Crypto/py-fhe
+pip install .
+cd ../..
+```
 
-## Despliegue Docker
-El código proporcionado contiene todo lo necesario para crear una imagen de Docker y levantar servicios independientes en la misma máquina utilizando Waitress.
-Para crear la imagen es necesario contar con el demonio de Docker que haya disponible para la máquina en que se esté trabajando.
-- Ir a la raíz del repositorio y ejecutar el comando `docker build -t ws-psi .`
--  Una vez creada la imagen, en el mismo directorio, se puede ejecutar `docker compose up`
-El archivo `docker-compose.yml` está configurado para crear 4 servicios bajo la misma red de Docker, luego estos se podrán conectar entre ellos como si se tratase de una red de área local.
-Para parar el servicio se puede mandar el comando `docker compose down` o utilizar el atajo `CTRL + C`.
-Para eliminar los contenedores y que no consuman recursos, se puede utilizar el comando `docker rm $(docker ps -aq)`.
+## Instalación de BackendRust
+
+Desde la raíz de `WS_PSI`:
+
+```bash
+mkdir -p third_party
+
+git clone https://github.com/UO265181/pswoosh_WS_PSI.git
+
+mv pswoosh_WS_PSI third_party/pswoosh
+```
+
+A continuación, se compila e instala el módulo nativo:
+
+```bash
+cd third_party/pswoosh/rust/ref0
+
+maturin develop --release
+```
+
+Para comprobar que la capa FFI funciona correctamente:
+
+```bash
+python test_pswoosh_ffi.py
+```
+
+Volver a la raíz del proyecto:
+
+```bash
+cd ../../../..
+```
+
+## Instalación automatizada
+
+También puede utilizarse el script de instalación incluido en el repositorio:
+
+```bash
+./setup.sh -pswoosh
+```
+
+Este script crea el entorno virtual, instala las dependencias principales y prepara la integración con `pswoosh`.
+
+## Configuración de Firebase
+
+El sistema puede registrar resultados, métricas y actividad en Firebase. Para ello debe colocarse el fichero de credenciales en la raíz del proyecto:
+
+```text
+FirebaseCredentials.json
+```
+
+Además, debe configurarse la URL de la base de datos en:
+
+```text
+Network/collections/DbConstants.py
+```
+
+El fichero de credenciales no debe subirse a repositorios públicos.
+
+## Ejecución local
+
+Con el entorno virtual activado, el servicio puede lanzarse con Flask:
+
+```bash
+flask --app flaskr:create_app run
+```
+
+O mediante Waitress, opción recomendada para pruebas más estables:
+
+```bash
+waitress-serve --host 127.0.0.1 --port 8080 --call flaskr:create_app
+```
+
+La interfaz web estará disponible en:
+
+```text
+http://127.0.0.1:8080/
+```
+
+La API REST estará disponible en:
+
+```text
+http://127.0.0.1:8080/api
+```
+
+## Ejecución con Docker
+
+Desde la raíz del proyecto:
+
+```bash
+docker build -t ws-psi .
+```
+
+Para levantar los nodos definidos en Docker Compose:
+
+```bash
+docker compose up
+```
+
+O en segundo plano:
+
+```bash
+docker compose up -d
+```
+
+Para comprobar los contenedores activos:
+
+```bash
+docker ps
+```
+
+Para detener el entorno:
+
+```bash
+docker compose down
+```
+
+Por defecto, Docker Compose levanta varios nodos accesibles desde distintos puertos locales.
+
+## Pruebas
+
+El repositorio incluye pruebas unitarias, pruebas de integración, pruebas de corrección y benchmarks de rendimiento relacionados con SWOOSH.
+
+Ejemplo de prueba unitaria básica:
+
+```bash
+export PYTHONPATH=.
+
+python tests/swoosh/unit/python/test_setup_A_python.py
+```
+
+Las pruebas y benchmarks principales se encuentran en:
+
+```text
+tests/swoosh/
+```
+
+## Notas sobre Windows
+
+La instalación en Windows no se ha documentado como procedimiento principal debido a la complejidad adicional de compilar `pswoosh_ffi`. El problema aparece principalmente durante la ejecución de `build.rs`, ya que el proyecto utiliza opciones de compilación orientadas a GCC/Clang que no son compatibles directamente con MSVC.
+
+Por este motivo, se recomienda utilizar Linux para reproducir la instalación completa.
+
+## Repositorios relacionados
+
+- Repositorio principal:  
+  `https://github.com/UO265181/WS_PSI`
+
+- Fork adaptado de `pswoosh`:  
+  `https://github.com/UO265181/pswoosh_WS_PSI`
 
 ## Licencia
-Este proyecto está distribuido bajo la licencia MIT. Para más información, consultar el archivo [LICENSE](LICENSE).
+
+Este repositorio mantiene la licencia indicada en el fichero `LICENSE`.
+
+Algunas dependencias externas utilizadas durante el proyecto están sujetas a sus propias licencias, como `python-flint`, `py-fhe`, `PyO3` y `pswoosh`.
